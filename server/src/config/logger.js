@@ -1,0 +1,24 @@
+const { createLogger, format, transports } = require("winston");
+const { combine, timestamp, printf, colorize, errors } = format;
+
+const devFormat = printf(({ level, message, timestamp, stack }) => {
+  return `${timestamp} [${level}]: ${stack || message}`;
+});
+
+const logger = createLogger({
+  level: process.env.NODE_ENV === "development" ? "debug" : "info",
+  format: combine(
+    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    errors({ stack: true }),   // logs full stack trace on errors
+    devFormat
+  ),
+  transports: [
+    new transports.Console({
+      format: combine(colorize(), devFormat),
+    }),
+    new transports.File({ filename: "logs/error.log", level: "error" }),
+    new transports.File({ filename: "logs/combined.log" }),
+  ],
+});
+
+module.exports = logger;

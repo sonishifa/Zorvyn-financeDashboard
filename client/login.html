@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinanceOS — Sign in</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">FinanceOS</div>
+    <div class="auth-sub">Finance dashboard for your team</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" id="tabLogin"    onclick="showTab('login')">Sign in</button>
+      <button class="tab-btn"        id="tabRegister" onclick="showTab('register')">Register</button>
+    </div>
+
+    <!-- Sign in form -->
+    <div id="formLogin">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="l-email" placeholder="you@company.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="l-password" placeholder="••••••"/>
+      </div>
+      <p class="error-msg" id="l-error"></p>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Sign in</button>
+    </div>
+
+    <!-- Register form -->
+    <div id="formRegister" style="display:none">
+      <div class="field">
+        <label>Full name</label>
+        <input type="text" id="r-name" placeholder="Jane Smith"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="r-email" placeholder="you@company.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="r-password" placeholder="Min 6 characters"/>
+      </div>
+      <div class="field">
+        <label>Role</label>
+        <select id="r-role">
+          <option value="viewer">Viewer — read only</option>
+          <option value="manager">Manager — can add entries</option>
+          <option value="admin">Admin — full access</option>
+        </select>
+      </div>
+      <p class="error-msg" id="r-error"></p>
+      <button class="btn btn-primary btn-full" onclick="doRegister()">Create account</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  if (localStorage.getItem("token")) location.href = "index.html";
+
+  function showTab(tab) {
+    const isLogin = tab === "login";
+    document.getElementById("formLogin").style.display    = isLogin ? "block" : "none";
+    document.getElementById("formRegister").style.display = isLogin ? "none"  : "block";
+    document.getElementById("tabLogin").classList.toggle("active", isLogin);
+    document.getElementById("tabRegister").classList.toggle("active", !isLogin);
+  }
+
+  async function doLogin() {
+    const err = document.getElementById("l-error");
+    err.textContent = "";
+    try {
+      const data = await api.login({
+        email:    document.getElementById("l-email").value.trim(),
+        password: document.getElementById("l-password").value,
+      });
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user",  JSON.stringify(data.user));
+      location.href = "index.html";
+    } catch (e) { err.textContent = e.message; }
+  }
+
+  async function doRegister() {
+    const err = document.getElementById("r-error");
+    err.textContent = "";
+    try {
+      const data = await api.register({
+        name:     document.getElementById("r-name").value.trim(),
+        email:    document.getElementById("r-email").value.trim(),
+        password: document.getElementById("r-password").value,
+        role:     document.getElementById("r-role").value,
+      });
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user",  JSON.stringify(data.user));
+      location.href = "index.html";
+    } catch (e) { err.textContent = e.message; }
+  }
+</script>
+</body>
+</html>

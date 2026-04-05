@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinanceOS</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="logo">FinanceOS</div>
+
+    <div class="nav-section-label">Menu</div>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('entries')">
+      <span class="icon">📋</span> Entries
+    </div>
+    <div class="nav-item" onclick="showPage('analytics')">
+      <span class="icon">📈</span> Analytics
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-name" id="sUser">—</div>
+        <div class="user-role" id="sRole">—</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">↩ Sign out</button>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ── DASHBOARD PAGE ──────────────────────────────────────── -->
+    <div id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">Overview</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="month" id="d-month" style="width:auto;padding:7px 12px;font-size:12px"/>
+          <button class="btn btn-ghost btn-sm" onclick="applyDateFilter()">Apply</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearDateFilter()">Clear</button>
+        </div>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="cards">
+        <div class="card income">
+          <div class="card-icon">💰</div>
+          <div class="card-label">Total Income</div>
+          <div class="card-value" id="c-income">—</div>
+          <div class="card-sub" id="c-income-count"></div>
+        </div>
+        <div class="card expense">
+          <div class="card-icon">💸</div>
+          <div class="card-label">Total Expenses</div>
+          <div class="card-value" id="c-expense">—</div>
+          <div class="card-sub" id="c-expense-count"></div>
+        </div>
+        <div class="card" id="c-net-card">
+          <div class="card-icon">⚖️</div>
+          <div class="card-label">Net Balance</div>
+          <div class="card-value" id="c-net">—</div>
+          <div class="card-sub">Income − Expenses</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📉</div>
+          <div class="card-label">Savings Rate</div>
+          <div class="card-value" id="c-savings">—</div>
+          <div class="card-sub">of income retained</div>
+        </div>
+      </div>
+
+      <!-- Chart + Category breakdown -->
+      <div class="grid-3" style="margin-bottom:20px">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Monthly trend</span></div>
+          <div class="panel-body"><canvas id="trendChart" height="220"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">By category</span></div>
+          <div class="panel-body" id="catBreakdown">
+            <div class="empty">No data</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent entries -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Recent entries</span>
+          <button class="btn btn-primary btn-sm" onclick="showPage('entries')">View all</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Title</th><th>Category</th><th>Date</th><th>Type</th><th class="text-right">Amount</th>
+            </tr></thead>
+            <tbody id="recentBody">
+              <tr><td colspan="5" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ENTRIES PAGE ─────────────────────────────────────────── -->
+    <div id="page-entries" style="display:none">
+      <div class="page-header">
+        <div class="page-title">Financial Entries</div>
+        <button class="btn btn-primary btn-sm" id="addEntryBtn" style="display:none" onclick="openModal()">+ Add Entry</button>
+      </div>
+
+      <div class="panel">
+        <div class="filters">
+          <select id="f-type" onchange="loadEntries()">
+            <option value="">All types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <input type="date" id="f-from" placeholder="From" onchange="loadEntries()" style="width:140px"/>
+          <input type="date" id="f-to"   placeholder="To"   onchange="loadEntries()" style="width:140px"/>
+          <button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset</button>
+          <button class="btn btn-ghost btn-sm" id="exportBtn" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Title</th><th>Category</th><th>Date</th><th>Type</th>
+              <th class="text-right">Amount</th><th></th>
+            </tr></thead>
+            <tbody id="entriesBody">
+              <tr><td colspan="6" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span id="paginationInfo">—</span>
+          <div class="page-btns">
+            <button class="page-btn" id="prevBtn" onclick="changePage(-1)">← Prev</button>
+            <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS PAGE ──────────────────────────────────────── -->
+    <div id="page-analytics" style="display:none">
+      <div class="page-header"><div class="page-title">Analytics</div></div>
+
+      <div class="grid-2" style="margin-bottom:20px">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Income vs Expense by month</span></div>
+          <div class="panel-body"><canvas id="barChart" height="260"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Expense distribution</span></div>
+          <div class="panel-body" style="display:flex;justify-content:center">
+            <canvas id="pieChart" height="260" width="260"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Category breakdown</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Category</th><th>Type</th><th>Transactions</th><th class="text-right">Total</th></tr></thead>
+            <tbody id="analyticsBody"><tr><td colspan="4" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Add Entry Modal ──────────────────────────────────────────── -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Entry</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="m-title" placeholder="e.g. Office Rent"/>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Amount (₹)</label>
+        <input type="number" id="m-amount" placeholder="0" min="0"/>
+      </div>
+      <div class="field">
+        <label>Type</label>
+        <select id="m-type">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Category</label>
+        <input type="text" id="m-category" placeholder="e.g. Utilities"/>
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="m-date"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Note (optional)</label>
+      <input type="text" id="m-note" placeholder="Any additional info"/>
+    </div>
+    <p class="error-msg" id="m-error"></p>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="submitEntry()">Save Entry</button>
+      <button class="btn btn-ghost"   onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+// ── Auth guard ───────────────────────────────────────────────────
+const token = localStorage.getItem("token");
+const user  = JSON.parse(localStorage.getItem("user") || "null");
+if (!token || !user) location.href = "login.html";
+
+const canWrite = ["admin","manager"].includes(user?.role);
+const isAdmin  = user?.role === "admin";
+
+// ── Sidebar user ─────────────────────────────────────────────────
+document.getElementById("sUser").textContent = user?.name || "—";
+document.getElementById("sRole").textContent = user?.role || "—";
+if (canWrite) document.getElementById("addEntryBtn").style.display = "inline-flex";
+
+function logout() { localStorage.clear(); location.href = "login.html"; }
+
+// ── Helpers ──────────────────────────────────────────────────────
+const fmt     = n  => "₹" + Number(n).toLocaleString("en-IN", {maximumFractionDigits:0});
+const fmtDate = d  => new Date(d).toLocaleDateString("en-IN", {day:"2-digit",month:"short",year:"numeric"});
+const monthName= m => ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m-1];
+
+// ── Page navigation ──────────────────────────────────────────────
+const pages = ["dashboard","entries","analytics"];
+function showPage(name) {
+  pages.forEach(p => {
+    document.getElementById("page-"+p).style.display = p === name ? "block" : "none";
+    document.querySelectorAll(".nav-item").forEach((el,i) => {
+      el.classList.toggle("active", pages[i] === name);
+    });
+  });
+  if (name === "dashboard") { loadSummary(); loadRecent(); }
+  if (name === "entries")   { loadEntries(); }
+  if (name === "analytics") { loadAnalytics(); }
+}
+
+// ── Date filter state ────────────────────────────────────────────
+let dateFilter = {};
+
+function applyDateFilter() {
+  const month = document.getElementById("d-month").value;
+  if (!month) return;
+  const [y, m] = month.split("-");
+  const last = new Date(y, m, 0).getDate();
+  dateFilter = { from: `${month}-01`, to: `${month}-${last}` };
+  loadSummary(); loadRecent();
+}
+
+function clearDateFilter() {
+  dateFilter = {};
+  document.getElementById("d-month").value = "";
+  loadSummary(); loadRecent();
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────
+let trendChart = null;
+
+async function loadSummary() {
+  try {
+    const { summary, byCategory, byMonth } = await api.getSummary(dateFilter);
+
+    document.getElementById("c-income").textContent  = fmt(summary.income);
+    document.getElementById("c-expense").textContent = fmt(summary.expense);
+    document.getElementById("c-net").textContent     = fmt(summary.net);
+
+    const netCard = document.getElementById("c-net-card");
+    netCard.className = "card " + (summary.net >= 0 ? "net-pos" : "net-neg");
+
+    const rate = summary.income > 0
+      ? Math.round((summary.net / summary.income) * 100) + "%"
+      : "—";
+    document.getElementById("c-savings").textContent = rate;
+
+    // income / expense counts from byCategory
+    const incomeTotal   = byCategory.filter(c=>c._id.type==="income").reduce((a,c)=>a+c.count,0);
+    const expenseTotal  = byCategory.filter(c=>c._id.type==="expense").reduce((a,c)=>a+c.count,0);
+    document.getElementById("c-income-count").textContent  = incomeTotal  + " transactions";
+    document.getElementById("c-expense-count").textContent = expenseTotal + " transactions";
+
+    // Category breakdown (expenses only, top 5)
+    const expCats = byCategory.filter(c=>c._id.type==="expense").slice(0,5);
+    const maxAmt  = Math.max(...expCats.map(c=>c.total), 1);
+    const catEl   = document.getElementById("catBreakdown");
+    if (!expCats.length) {
+      catEl.innerHTML = '<div class="empty">No expense data</div>';
+    } else {
+      catEl.innerHTML = expCats.map(c => `
+        <div class="cat-item">
+          <div class="cat-row">
+            <span class="cat-name">${c._id.category}</span>
+            <span class="cat-amt">${fmt(c.total)}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill expense" style="width:${Math.round(c.total/maxAmt*100)}%"></div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // Monthly trend chart
+    const months = [...new Set(byMonth.map(m=>`${m._id.year}-${String(m._id.month).padStart(2,"0")}`))].sort().slice(-6);
+    const incomeData  = months.map(key => {
+      const r = byMonth.find(m=>m._id.type==="income" && `${m._id.year}-${String(m._id.month).padStart(2,"0")}` === key);
+      return r ? r.total : 0;
+    });
+    const expenseData = months.map(key => {
+      const r = byMonth.find(m=>m._id.type==="expense" && `${m._id.year}-${String(m._id.month).padStart(2,"0")}` === key);
+      return r ? r.total : 0;
+    });
+    const labels = months.map(k => { const [y,m] = k.split("-"); return monthName(+m)+" "+y.slice(2); });
+
+    if (trendChart) trendChart.destroy();
+    trendChart = new Chart(document.getElementById("trendChart"), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          { label:"Income",  data:incomeData,  borderColor:"#22c55e", backgroundColor:"#22c55e22", tension:0.4, fill:true },
+          { label:"Expense", data:expenseData, borderColor:"#ef4444", backgroundColor:"#ef444422", tension:0.4, fill:true },
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:"bottom", labels:{ font:{ size:11 }, boxWidth:12 }}},
+        scales:{ y:{ beginAtZero:true, ticks:{ callback: v=>"₹"+v.toLocaleString("en-IN") }}}
+      }
+    });
+  } catch(e) { console.error("Summary:", e.message); }
+}
+
+async function loadRecent() {
+  const tbody = document.getElementById("recentBody");
+  try {
+    const { entries } = await api.getEntries({ limit:5, ...dateFilter });
+    tbody.innerHTML = !entries.length
+      ? `<tr><td colspan="5" class="empty">No entries found</td></tr>`
+      : entries.map(e=>`
+        <tr>
+          <td>${e.title}</td>
+          <td>${e.category}</td>
+          <td>${fmtDate(e.date)}</td>
+          <td><span class="badge ${e.type}">${e.type}</span></td>
+          <td class="text-right" style="font-weight:600">${fmt(e.amount)}</td>
+        </tr>`).join("");
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="empty">Failed to load</td></tr>`; }
+}
+
+// ── ENTRIES ──────────────────────────────────────────────────────
+let currentPage = 1;
+let totalPages  = 1;
+let allEntries  = [];
+
+async function loadEntries() {
+  const tbody = document.getElementById("entriesBody");
+  const query = {
+    page:  currentPage,
+    limit: 10,
+    type:  document.getElementById("f-type").value,
+    from:  document.getElementById("f-from").value,
+    to:    document.getElementById("f-to").value,
+  };
+  Object.keys(query).forEach(k => !query[k] && delete query[k]);
+
+  try {
+    const result = await api.getEntries(query);
+    allEntries = result.entries;
+    totalPages = result.totalPages;
+
+    document.getElementById("paginationInfo").textContent =
+      `Showing ${result.entries.length} of ${result.total} entries`;
+    document.getElementById("prevBtn").disabled = currentPage <= 1;
+    document.getElementById("nextBtn").disabled = currentPage >= totalPages;
+
+    tbody.innerHTML = !allEntries.length
+      ? `<tr><td colspan="6" class="empty">No entries found</td></tr>`
+      : allEntries.map(e=>`
+        <tr>
+          <td>${e.title}${e.note ? `<div style="font-size:11px;color:var(--muted)">${e.note}</div>` : ""}</td>
+          <td>${e.category}</td>
+          <td>${fmtDate(e.date)}</td>
+          <td><span class="badge ${e.type}">${e.type}</span></td>
+          <td class="text-right" style="font-weight:600">${fmt(e.amount)}</td>
+          <td>${isAdmin ? `<button class="btn btn-sm btn-danger" onclick="deleteEntry('${e._id}')">Delete</button>` : ""}</td>
+        </tr>`).join("");
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">Failed to load entries</td></tr>`;
+  }
+}
+
+function changePage(dir) {
+  currentPage = Math.max(1, Math.min(totalPages, currentPage + dir));
+  loadEntries();
+}
+
+function resetFilters() {
+  document.getElementById("f-type").value = "";
+  document.getElementById("f-from").value = "";
+  document.getElementById("f-to").value   = "";
+  currentPage = 1;
+  loadEntries();
+}
+
+window.deleteEntry = async (id) => {
+  if (!confirm("Delete this entry? This cannot be undone.")) return;
+  try { await api.deleteEntry(id); currentPage = 1; loadEntries(); loadSummary(); }
+  catch(e) { alert(e.message); }
+};
+
+function exportCSV() {
+  if (!allEntries.length) return alert("No entries to export");
+  const rows = [["Title","Category","Date","Type","Amount","Note"]];
+  allEntries.forEach(e => rows.push([
+    e.title, e.category, fmtDate(e.date), e.type, e.amount, e.note || ""
+  ]));
+  const csv  = rows.map(r => r.map(v=>`"${v}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type:"text/csv" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = "entries.csv"; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── ANALYTICS ────────────────────────────────────────────────────
+let barChart = null;
+let pieChart = null;
+
+async function loadAnalytics() {
+  try {
+    const { byCategory, byMonth } = await api.getSummary();
+
+    // Bar chart — income vs expense by month
+    const months      = [...new Set(byMonth.map(m=>`${m._id.year}-${String(m._id.month).padStart(2,"0")}`))].sort().slice(-6);
+    const incomeData  = months.map(key=>{const r=byMonth.find(m=>m._id.type==="income"&&`${m._id.year}-${String(m._id.month).padStart(2,"0")}`===key);return r?r.total:0;});
+    const expenseData = months.map(key=>{const r=byMonth.find(m=>m._id.type==="expense"&&`${m._id.year}-${String(m._id.month).padStart(2,"0")}`===key);return r?r.total:0;});
+    const labels      = months.map(k=>{const[y,m]=k.split("-");return monthName(+m)+" "+y.slice(2);});
+
+    if (barChart) barChart.destroy();
+    barChart = new Chart(document.getElementById("barChart"), {
+      type:"bar",
+      data:{ labels, datasets:[
+        {label:"Income", data:incomeData,  backgroundColor:"#22c55e99"},
+        {label:"Expense",data:expenseData, backgroundColor:"#ef444499"},
+      ]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:"bottom",labels:{font:{size:11},boxWidth:12}}},
+        scales:{y:{beginAtZero:true,ticks:{callback:v=>"₹"+v.toLocaleString("en-IN")}}}
+      }
+    });
+
+    // Pie chart — expense categories
+    const expCats = byCategory.filter(c=>c._id.type==="expense");
+    if (pieChart) pieChart.destroy();
+    pieChart = new Chart(document.getElementById("pieChart"), {
+      type:"doughnut",
+      data:{
+        labels: expCats.map(c=>c._id.category),
+        datasets:[{
+          data: expCats.map(c=>c.total),
+          backgroundColor:["#4f46e5","#22c55e","#ef4444","#f59e0b","#8b5cf6","#ec4899","#06b6d4"],
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:"bottom",labels:{font:{size:11},boxWidth:12}}}
+      }
+    });
+
+    // Table breakdown
+    document.getElementById("analyticsBody").innerHTML = !byCategory.length
+      ? `<tr><td colspan="4" class="empty">No data</td></tr>`
+      : byCategory.map(c=>`
+        <tr>
+          <td>${c._id.category}</td>
+          <td><span class="badge ${c._id.type}">${c._id.type}</span></td>
+          <td>${c.count}</td>
+          <td class="text-right" style="font-weight:600">${fmt(c.total)}</td>
+        </tr>`).join("");
+  } catch(e) { console.error("Analytics:", e.message); }
+}
+
+// ── MODAL ────────────────────────────────────────────────────────
+function openModal() {
+  document.getElementById("m-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("modal").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.remove("open");
+  document.getElementById("m-error").textContent = "";
+  ["m-title","m-amount","m-category","m-note"].forEach(id=>document.getElementById(id).value="");
+}
+
+async function submitEntry() {
+  const errEl = document.getElementById("m-error");
+  errEl.textContent = "";
+  const body = {
+    title:    document.getElementById("m-title").value.trim(),
+    amount:   parseFloat(document.getElementById("m-amount").value),
+    type:     document.getElementById("m-type").value,
+    category: document.getElementById("m-category").value.trim(),
+    date:     document.getElementById("m-date").value,
+    note:     document.getElementById("m-note").value.trim(),
+  };
+  if (!body.title || !body.amount || !body.category) {
+    errEl.textContent = "Title, amount and category are required"; return;
+  }
+  try {
+    await api.createEntry(body);
+    closeModal();
+    if (document.getElementById("page-entries").style.display !== "none") loadEntries();
+    loadSummary(); loadRecent();
+  } catch(e) { errEl.textContent = e.message; }
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+showPage("dashboard");
+</script>
+</body>
+</html>
