@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FinanceOS</title>
+  <title>FinStack</title>
+  <link rel="icon" type="image/png" href="/logo.png"/>
   <link rel="stylesheet" href="css/style.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -12,17 +13,20 @@
 
   <!-- ── Sidebar ──────────────────────────────────────────────── -->
   <aside class="sidebar">
-    <div class="logo">FinanceOS</div>
+    <div class="logo">FinStack
+      <img src="/logo.png" alt="FinStack" style="height:28px;border-radius:5px;"/>
+  FinStack
+    </div>
 
     <div class="nav-section-label">Menu</div>
     <div class="nav-item active" onclick="showPage('dashboard')">
-      <span class="icon">📊</span> Dashboard
+      <span class="icon"></span> Dashboard
     </div>
     <div class="nav-item" onclick="showPage('entries')">
-      <span class="icon">📋</span> Entries
+      <span class="icon"></span> Entries
     </div>
     <div class="nav-item" onclick="showPage('analytics')">
-      <span class="icon">📈</span> Analytics
+      <span class="icon"></span> Analytics
     </div>
 
     <div class="sidebar-footer">
@@ -51,25 +55,25 @@
       <!-- Summary cards -->
       <div class="cards">
         <div class="card income">
-          <div class="card-icon">💰</div>
+          <div class="card-icon"></div>
           <div class="card-label">Total Income</div>
           <div class="card-value" id="c-income">—</div>
           <div class="card-sub" id="c-income-count"></div>
         </div>
         <div class="card expense">
-          <div class="card-icon">💸</div>
+          <div class="card-icon"></div>
           <div class="card-label">Total Expenses</div>
           <div class="card-value" id="c-expense">—</div>
           <div class="card-sub" id="c-expense-count"></div>
         </div>
         <div class="card" id="c-net-card">
-          <div class="card-icon">⚖️</div>
+          <div class="card-icon"></div>
           <div class="card-label">Net Balance</div>
           <div class="card-value" id="c-net">—</div>
-          <div class="card-sub">Income − Expenses</div>
+          <div class="card-sub">Income Expenses</div>
         </div>
         <div class="card">
-          <div class="card-icon">📉</div>
+          <div class="card-icon"></div>
           <div class="card-label">Savings Rate</div>
           <div class="card-value" id="c-savings">—</div>
           <div class="card-sub">of income retained</div>
@@ -187,7 +191,7 @@
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">New Entry</span>
-      <button class="modal-close" onclick="closeModal()">×</button>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
     <div class="field">
       <label>Title</label>
