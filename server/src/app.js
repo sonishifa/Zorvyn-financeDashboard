@@ -15,7 +15,18 @@ const analyticsRoutes = require("./api/v1/routes/analytics.routes");
 const app = express();
 
 // ─── Security & parsing middlewares ───────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:  ["'self'"],
+      scriptSrc:   ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
+      scriptSrcAttr: ["'unsafe-inline'"],
+      styleSrc:    ["'self'", "'unsafe-inline'"],
+      imgSrc:      ["'self'", "data:"],
+      connectSrc:  ["'self'", "http://localhost:8000"],
+    },
+  },
+}));
 app.use(cors());
 app.use(express.json());
 const path = require("path");
