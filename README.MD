@@ -1,4 +1,4 @@
-<h1><img src="./logo.png" alt="FinStack" height="28" style="vertical-align:middle; margin-right:8px;"/> FinStack — Finance Dashboard</h1>
+<h1><img src="./logo.png" alt="FinStack" height="45" style="vertical-align:middle; margin-right:8px;"/> FinStack — Finance Dashboard</h1>
 
 # FinStack — Finance Dashboard
 
