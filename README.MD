@@ -1,7 +1,5 @@
 <h1><img src="./logo.png" alt="FinStack" height="100" style="vertical-align:middle; margin-right:8px;"/> FinStack — Finance Dashboard</h1>
 
-# FinStack — Finance Dashboard
-
 A full-stack finance dashboard system with role-based access control, financial entry management, and summary-level analytics. Built as a backend engineering assignment to demonstrate API design, data modelling, business logic, and access control.
 
 ---
